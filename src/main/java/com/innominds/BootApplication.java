@@ -40,7 +40,9 @@ public class BootApplication extends SpringBootServletInitializer {
     }
 
     public static void main(String args[]) {
-        LOGGER.info("Placeholder test ");
+        System.setProperty("spring.profiles.active", "dev");
+
+        LOGGER.info("Running Spring boot application with profile :  {}", System.getProperty("spring.profiles.active"));
 
         final SpringApplication application = new SpringApplication(BootApplication.class);
         final Properties properties = new Properties();

@@ -7,18 +7,16 @@ import javax.sql.DataSource;
 
 import org.hibernate.annotations.common.util.StringHelper;
 import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.dialect.MySQL5InnoDBDialect;
+import org.hibernate.dialect.DerbyTenSevenDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -35,30 +33,19 @@ import com.jolbox.bonecp.BoneCPDataSource;
 @EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory", basePackages = { "com.innominds.persistence.repository" }, repositoryImplementationPostfix = "Helper", transactionManagerRef = "transactionManager")
 @PropertySource("classpath:application.properties")
 @EnableTransactionManagement
-public class DBConfig {
+@Profile("dev")
+public class DerbyDBConfig {
 
     /** Reference to logger */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DerbyDBConfig.class);
 
-    @Autowired
-    private Environment env;
-
-    /**
-     * spring boot looks for the bean with name 'dataSource'.if not found it will check application.properties from the class-path try to create one dataSource
-     * with the given properties.
-     *
-     * @return DataSource
-     */
     @Bean
     public DataSource dataSource() {
-
-        LOGGER.info("Creating custom dataSource  using BoneCPDataSource");
+        // instantiate, configure and return production DataSource
         final BoneCPDataSource dataSource = new BoneCPDataSource();
-        dataSource.setDriverClass("com.mysql.jdbc.Driver");
-        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+        dataSource.setDriverClass(org.apache.derby.jdbc.EmbeddedDriver.class.getName());
+        dataSource.setJdbcUrl("jdbc:derby:target/innodb;create=true");
         dataSource.setIdleConnectionTestPeriodInMinutes(1);
-        dataSource.setUsername("root");
-        dataSource.setPassword("admin");
         dataSource.setCloseOpenStatements(true);
         dataSource.setIdleMaxAgeInMinutes(1);
         dataSource.setMaxConnectionsPerPartition(100);
@@ -68,21 +55,14 @@ public class DBConfig {
         return dataSource;
     }
 
-    /**
-     * enable @Bean annotation if you want to use hibernate directly instead of spring data JPA repositories
-     *
-     * @param dataSource
-     * @return LocalSessionFactoryBean
-     */
-    // @Bean
-    public LocalSessionFactoryBean sessionFactory(DataSource dataSource) {
-        final LocalSessionFactoryBean sfb = new LocalSessionFactoryBean();
-        sfb.setDataSource(dataSource);
-        sfb.setPackagesToScan(new String[] { UserEntity.class.getPackage().getName() });
-        final Properties props = new Properties();
-        props.setProperty("dialect", MySQL5InnoDBDialect.class.getName());
-        sfb.setHibernateProperties(props);
-        return sfb;
+    @Bean
+    public JpaVendorAdapter jpaVendorAdapter() {
+        final HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+        adapter.setDatabase(Database.DERBY);
+        adapter.setShowSql(true);
+        adapter.setGenerateDdl(true);
+        adapter.setDatabasePlatform(DerbyTenSevenDialect.class.getName());
+        return adapter;
     }
 
     /**
@@ -99,7 +79,7 @@ public class DBConfig {
         em.setPackagesToScan(new String[] { UserEntity.class.getPackage().getName() });
         em.setJpaVendorAdapter(jpaVendorAdapter());
         em.setJpaProperties(additionalJpaProperties());
-        em.setPersistenceUnitName("INNO-PU");
+        em.setPersistenceUnitName("DERBY_PERSISTENCE_UNIT");
         em.afterPropertiesSet();
         LOGGER.info("Created entityManager with dataSource API {} ", em.getDataSource().getClass());
         return em.getObject();
@@ -108,21 +88,11 @@ public class DBConfig {
     Properties additionalJpaProperties() {
         final Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "create-drop"); // TODO: create-drop,create,none
-        properties.setProperty("hibernate.dialect", MySQL5InnoDBDialect.class.getName());
+        properties.setProperty("hibernate.dialect", DerbyTenSevenDialect.class.getName());
         properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.format_sql", "false");
         properties.setProperty("hibernate.ejb.naming_strategy", DatabaseNamingStrategy.class.getName());// fully qualified name a string
         return properties;
-    }
-
-    @Bean
-    public JpaVendorAdapter jpaVendorAdapter() {
-        final HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
-        adapter.setDatabase(Database.MYSQL);
-        adapter.setShowSql(true);
-        adapter.setGenerateDdl(true);
-        adapter.setDatabasePlatform(MySQL5InnoDBDialect.class.getName());
-        return adapter;
     }
 
     /**

@@ -57,7 +57,7 @@ public class WebDotXMLConfig extends AbstractAnnotationConfigDispatcherServletIn
      */
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[] { WebSecurityConfig.class, DBConfig.class };
+        return new Class[] { WebSecurityConfig.class, MySQLDBConfig.class };
 
     }
 

@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.innominds</groupId>
 	<artifactId>spring-rest-template</artifactId>
-	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
 
 	<parent>
@@ -12,6 +11,30 @@
 		<version>1.3.3.RELEASE</version>
 	</parent>
 
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/Innominds-jee/spring-rest-template</url>
+		<connection>scm:git:git@github.com:Innominds-jee/spring-rest-template.git</connection>
+		<developerConnection>scm:git:git@github.com:Innominds-jee/spring-rest-template.git</developerConnection>
+	</scm>
+
+	<url>https://github.com/Innominds-jee/spring-rest-template</url>
+
+	<developers>
+		<developer>
+			<id>tvajjala</id>
+			<email>tvajjala@innominds.com</email>
+			<organization>Innominds</organization>
+			<url>http://tvajjala.in</url>
+		</developer>
+	</developers>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -82,6 +105,11 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.jolbox</groupId>
@@ -89,7 +117,7 @@
 			<version>0.8.0.RELEASE</version>
 		</dependency>
 
-	
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -123,7 +151,7 @@
 
 
 	<build>
-
+		<finalName>${artifactId}</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -138,6 +166,52 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+
+			<!-- Copy Docker file -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docker</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+<!-- 
+$ mvn package docker:build
+$ docker push <imageName>
+
+ -->
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.2.3</version>
+				<configuration>
+					<imageName>innominds/${project.artifactId}</imageName>
+					<dockerDirectory>src/main/docker</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
 			</plugin>
 
 			<plugin>

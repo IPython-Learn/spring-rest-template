@@ -80,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public FilterChainProxy springSecurityFilterChain() throws ServletException, Exception {
 
         final List<SecurityFilterChain> listOfFilterChains = new ArrayList<SecurityFilterChain>();
-        listOfFilterChains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/")));
+        listOfFilterChains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/index.html")));
         listOfFilterChains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/error")));
         listOfFilterChains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/health")));
         listOfFilterChains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/api/metrics")));
@@ -322,7 +322,7 @@ class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException exception) throws IOException,
-    ServletException {
+            ServletException {
 
         LOGGER.warn("Authentication fails");
 
