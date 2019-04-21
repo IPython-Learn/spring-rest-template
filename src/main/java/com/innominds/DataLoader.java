@@ -79,9 +79,9 @@ public class DataLoader implements InitializingBean {
 
         final Authority userRole = authorityService.saveAuthority(new Authority(ApplicationRole.ROLE_USER));
 
-        createUser("admin", "admin@in.com", "9000211020", name, adminRole);
+        createUser("admin", "admin@in.com", "0000000000", name, adminRole);
 
-        createUser("tvajjala", "tvajjala@in.com", "9000211024", name, userRole);
+        createUser("tvajjala", "xxxxxxx@xx.com", "000000000", name, userRole);
 
         final List<String> list = new ArrayList<String>();
         list.add(ApplicationRole.ROLE_ADMIN.name());
