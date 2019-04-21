@@ -73,7 +73,7 @@ public class DataLoader implements InitializingBean {
 
     private void initializeUsers() throws ServiceException {
 
-        final String name = "ThirupathiReddy";
+        final String name = "XXXXXXXXXXXX";
 
         final Authority adminRole = authorityService.saveAuthority(new Authority(ApplicationRole.ROLE_ADMIN));
 
